@@ -1,0 +1,203 @@
+[
+  {
+    "item_id": "TXT-001",
+    "type": "text",
+    "title": "Elektrikli Araç Batarya Garanti Politikası",
+    "category": "garanti",
+    "product_code": "EV-BATTERY-WARRANTY",
+    "source": "servis_dokumani",
+    "content": "Elektrikli araç yüksek voltaj bataryaları 8 yıl veya 160.000 kilometre garanti kapsamındadır. Garanti kapsamında değerlendirilebilmesi için batarya kapasitesinin belirlenen eşik seviyenin altına düşmesi gerekir. Yetkisiz müdahale, fiziksel hasar veya uygunsuz şarj altyapısı nedeniyle oluşan arızalar garanti dışı sayılabilir.",
+    "image_path": null,
+    "metadata": {
+      "brand": "DemoAuto",
+      "vehicle_type": "electric",
+      "department": "after_sales"
+    }
+  },
+  {
+    "item_id": "TXT-002",
+    "type": "text",
+    "title": "Fren Balatası Arıza Belirtileri",
+    "category": "teknik_bilgi",
+    "product_code": "BRK-PAD-INFO",
+    "source": "teknik_bilgi_bankasi",
+    "content": "Fren balatası aşınması durumunda frenleme sırasında ötme sesi, fren mesafesinde uzama, pedalda sertleşme veya direksiyonda titreşim görülebilir. Balata kalınlığı kritik seviyeye düştüğünde balata değişimi yapılmalıdır.",
+    "image_path": null,
+    "metadata": {
+      "brand": "DemoAuto",
+      "part_group": "brake_system"
+    }
+  },
+  {
+    "item_id": "TXT-003",
+    "type": "text",
+    "title": "Motor Yağı Değişim Prosedürü",
+    "category": "servis",
+    "product_code": "ENG-OIL-SERVICE",
+    "source": "servis_proseduru",
+    "content": "Benzinli araçlarda motor yağı değişimi normal kullanım koşullarında 10.000 kilometre veya 12 ayda bir yapılmalıdır. Ağır kullanım koşullarında bu süre 7.500 kilometreye düşürülebilir. Yağ filtresi her yağ değişiminde yenilenmelidir.",
+    "image_path": null,
+    "metadata": {
+      "brand": "DemoAuto",
+      "part_group": "engine"
+    }
+  },
+  {
+    "item_id": "IMG-001",
+    "type": "image",
+    "title": "Araç Aküsü Görseli",
+    "category": "yedek_parca_gorsel",
+    "product_code": "BAT-12V-BOSCH",
+    "source": "parca_gorsel_katalogu",
+    "content": "12V araç aküsü, otomotiv marş sistemi ve elektrik besleme parçası.",
+    "image_path": "images/car_battery_bosch.jpeg",
+    "metadata": {
+      "brand": "BOSCH",
+      "part_group": "battery",
+      "voltage": "12V"
+    }
+  },
+    {
+    "item_id": "IMG-002",
+    "type": "image",
+    "title": "Araç Aküsü Görseli",
+    "category": "yedek_parca_gorsel",
+    "product_code": "BAT-12V-VRSTRT",
+    "source": "parca_gorsel_katalogu",
+    "content": "12V araç aküsü, otomotiv marş sistemi ve elektrik besleme parçası.",
+    "image_path": "images/car_battery_ever_start.jpeg",
+    "metadata": {
+      "brand": "EVER START",
+      "part_group": "battery",
+      "voltage": "12V"
+    }
+  },
+    {
+    "item_id": "IMG-003",
+    "type": "image",
+    "title": "Araç Aküsü Görseli",
+    "category": "yedek_parca_gorsel",
+    "product_code": "BAT-12V-PWRLN",
+    "source": "parca_gorsel_katalogu",
+    "content": "12V araç aküsü, otomotiv marş sistemi ve elektrik besleme parçası.",
+    "image_path": "images/car_battery_powerline.jpeg",
+    "metadata": {
+      "brand": "POWERLINE",
+      "part_group": "battery",
+      "voltage": "12V"
+    }
+  },
+  {
+    "item_id": "IMG-004",
+    "type": "image",
+    "title": "Fren Balatası Görseli",
+    "category": "yedek_parca_gorsel",
+    "product_code": "BRK-PAD-FRONT-BOSCH-FC5",
+    "source": "parca_gorsel_katalogu",
+    "content": "Ön fren balatası, disk fren sistemi için kullanılan yedek parça. Honda civic fc5 kasa uyumlu.",
+    "image_path": "images/brake_pad_bosch_honda_civic_fc5_front.jpeg",
+    "metadata": {
+      "brand": "BOSCH",
+      "part_group": "brake_system"
+    }
+  },
+  {
+    "item_id": "IMG-005",
+    "type": "image",
+    "title": "Fren Balatası Görseli",
+    "category": "yedek_parca_gorsel",
+    "product_code": "BRK-PAD-FRONT-SBS-FC5",
+    "source": "parca_gorsel_katalogu",
+    "content": "Ön fren balatası, disk fren sistemi için kullanılan yedek parça. Honda civic fc5 kasa uyumlu.",
+    "image_path": "images/brake_pad_sbs_honda_civic_fc5_front.jpeg",
+    "metadata": {
+      "brand": "SBS",
+      "part_group": "brake_system"
+    }
+  },
+  {
+    "item_id": "IMG-006",
+    "type": "image",
+    "title": "Fren Balatası Görseli",
+    "category": "yedek_parca_gorsel",
+    "product_code": "BRK-PAD-FRONT-OSIMCO-FC5",
+    "source": "parca_gorsel_katalogu",
+    "content": "Ön fren balatası, disk fren sistemi için kullanılan yedek parça. Honda civic fc5 kasa uyumlu.",
+    "image_path": "images/brake_pad_osimco_honda_civic_fc5_front.jpeg",
+    "metadata": {
+      "brand": "OSIMCO",
+      "part_group": "brake_system"
+    }
+  },
+  {
+    "item_id": "IMG-007",
+    "type": "image",
+    "title": "Fren Balatası Görseli",
+    "category": "yedek_parca_gorsel",
+    "product_code": "BRK-PAD-FRONT-BREMBO-FC5",
+    "source": "parca_gorsel_katalogu",
+    "content": "Ön fren balatası, disk fren sistemi için kullanılan yedek parça.Honda civic fc5 kasa uyumlu. ",
+    "image_path": "images/brake_pad_brembo_honda_civic_fc5_front.jpeg",
+    "metadata": {
+      "brand": "BREMBO",
+      "part_group": "brake_system"
+    }
+  }
+  ,
+  {
+    "item_id": "IMG-008",
+    "type": "image",
+    "title": "Motor yağı görseli",
+    "category": "motor_yagi_gorsel",
+    "product_code": "ENGINE-OIL-TOTAL",
+    "source": "motor_yag_gorsel_katalogu",
+    "content": "Motor yağı, motorun iç parçalarını yağlayarak sürtünmeden kaynaklı aşınmayı önleyen ve motor ömrünü uzatan koruyucu sıvıdır. Total Quartz 5w-40 marka. ",
+    "image_path": "images/engine_oil_total_quartz_5w_40.jpeg",
+    "metadata": {
+      "brand": "TOTAL",
+      "part_group": "engine_system"
+    }
+  },
+  {
+    "item_id": "IMG-009",
+    "type": "image",
+    "title": "Motor yağı görseli",
+    "category": "motor_yagi_gorsel",
+    "product_code": "ENGINE-OIL-SHELL",
+    "source": "motor_yag_gorsel_katalogu",
+    "content": "Motor yağı, motorun iç parçalarını yağlayarak sürtünmeden kaynaklı aşınmayı önleyen ve motor ömrünü uzatan koruyucu sıvıdır. Shell helix ultra 5w-40 marka. ",
+    "image_path": "images/engine_oil_shell_helix_ultra_5w_40.jpeg",
+    "metadata": {
+      "brand": "SHELL",
+      "part_group": "engine_system"
+    }
+  },
+  {
+    "item_id": "IMG-010",
+    "type": "image",
+    "title": "Motor yağı görseli",
+    "category": "motor_yagi_gorsel",
+    "product_code": "ENGINE-OIL-PPLUS",
+    "source": "motor_yag_gorsel_katalogu",
+    "content": "Motor yağı, motorun iç parçalarını yağlayarak sürtünmeden kaynaklı aşınmayı önleyen ve motor ömrünü uzatan koruyucu sıvıdır. Performance Plus 5w-20 marka. ",
+    "image_path": "images/engine_oil_performance_plus_5w_20.jpeg",
+    "metadata": {
+      "brand": "PERFORMENCE PLUS",
+      "part_group": "engine_system"
+    }
+  },
+  {
+    "item_id": "IMG-011",
+    "type": "image",
+    "title": "Motor yağı görseli",
+    "category": "motor_yagi_gorsel",
+    "product_code": "ENGINE-OIL-CASTROL",
+    "source": "motor_yag_gorsel_katalogu",
+    "content": "Motor yağı, motorun iç parçalarını yağlayarak sürtünmeden kaynaklı aşınmayı önleyen ve motor ömrünü uzatan koruyucu sıvıdır. Castrol Magnetic 5w-30 marka.",
+    "image_path": "images/engine_oil_castrol_magnetic.jpeg",
+    "metadata": {
+      "brand": "CASTROL",
+      "part_group": "engine_system"
+    }
+  }
+]
