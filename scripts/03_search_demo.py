@@ -6,6 +6,8 @@ def print_results(results):
 
     for i, item in enumerate(results, start=1):
         print(f"{i}. Skor       : {item['score']:.4f}")
+        print(f"   Match      : {item.get('match_type')}")
+        print(f"   Vector Tip : {item.get('vector_type')}")
         print(f"   Tip        : {item['item_type']}")
         print(f"   Başlık     : {item['title']}")
         print(f"   Kategori   : {item['category']}")
@@ -23,7 +25,10 @@ if __name__ == "__main__":
         "araba aküsü görselini getir",
         "fren balatası aşınırsa ne olur",
         "motor yağı kaç kilometrede değişir",
-        "ENGINE-OIL-CASTROL ürün kodlu parça"
+        "ENGINE-OIL-CASTROL ürün kodlu parça",
+        "Castrol motor yağı görselini getir",
+        "BOSCH akü görseli",
+        "Honda civic fc5 ön fren balatası"
     ]
 
     for query in queries:
