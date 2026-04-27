@@ -11,8 +11,8 @@ import torch
 import numpy as np
 
 #model ve örnek resim path
-MODEL_PATH = "/home/user/ahmet-ai/qwen3.59bserver/local_multimodal_lab/data/faiss_sqlite/model/Qwen3-VL-Embedding-2B"
-IMAGE_PATH = "/home/user/ahmet-ai/qwen3.59bserver/local_multimodal_lab/data/faiss_sqlite/app/car_battery.jpeg"
+MODEL_PATH = "/home/user/ahmet-ai/faiss_sqlite_automotive/model/Qwen3-VL-Embedding-2B"
+IMAGE_PATH = "/home/user/ahmet-ai/faiss_sqlite_automotive/data/images/car_battery_bosch.png"
 
 # vektördeki değerlerin karelerinin toplamının karekökünü (Öklid mesafesi) kullanarak veriyi normalize ederiz
 def l2_normalize(x: np.ndarray) -> np.ndarray:
