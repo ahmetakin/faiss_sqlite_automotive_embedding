@@ -23,7 +23,7 @@ if __name__ == "__main__":
         "araba aküsü görselini getir",
         "fren balatası aşınırsa ne olur",
         "motor yağı kaç kilometrede değişir",
-        "BRK-PAD-FRONT ürün kodlu parça"
+        "ENGINE-OIL-CASTROL ürün kodlu parça"
     ]
 
     for query in queries:
