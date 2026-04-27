@@ -66,3 +66,5 @@ class FaissIndexStore:
             })
 
         return results
+
+#vector_id önemi burada arz ediyor.

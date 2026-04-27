@@ -1,3 +1,5 @@
+#Burada SQlite kullandık kolaylık olsun diye
+
 import json
 import sqlite3
 from app.config import DB_PATH
@@ -13,6 +15,7 @@ def init_db():
     conn = get_connection()
     cur = conn.cursor()
 
+    #burada vector_id olusturulurken verilir
     cur.execute("""
     CREATE TABLE IF NOT EXISTS items (
         vector_id INTEGER PRIMARY KEY,
@@ -28,16 +31,19 @@ def init_db():
     )
     """)
 
+    #index olusturuyoruz dbde
     cur.execute("""
     CREATE INDEX IF NOT EXISTS idx_items_item_id
     ON items(item_id)
     """)
 
+    #category indexi
     cur.execute("""
     CREATE INDEX IF NOT EXISTS idx_items_category
     ON items(category)
     """)
 
+    #ürün ismi indexi
     cur.execute("""
     CREATE INDEX IF NOT EXISTS idx_items_product_code
     ON items(product_code)
@@ -99,7 +105,7 @@ def insert_item(
     conn.commit()
     conn.close()
 
-
+#vector_id sine göre veri çekme
 def fetch_item_by_vector_id(vector_id: int):
     conn = get_connection()
     cur = conn.cursor()

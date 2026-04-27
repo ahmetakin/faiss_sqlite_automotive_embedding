@@ -104,6 +104,10 @@ def ingest_all():
     index_store.build(embeddings_matrix, vector_ids)
     index_store.save()
 
-    print("\nIngestion tamamlandı.")
+    print("\nIngestion tamamlandı.") #veriyi yükleme
     print("Toplam kayıt:", len(vector_ids))
     print("Embedding shape:", embeddings_matrix.shape)
+
+#Burada Captione text embedding bulunmuyor şuan görseller için vektörize ettiğimiz 2. aşamada denenecek
+#Ekledikten sonra görsel benzerlik ve açıklama benzerliği güçlenecek
+#
