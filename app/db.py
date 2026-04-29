@@ -164,3 +164,115 @@ def search_exact_by_product_code(query: str):
         results.append(item)
 
     return results
+
+def search_items_by_product_code(product_code: str):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+    SELECT *
+    FROM items
+    WHERE UPPER(product_code) = UPPER(?)
+    """, (product_code,))
+
+    rows = cur.fetchall()
+    conn.close()
+
+    results = []
+    for row in rows:
+        item = dict(row)
+        item["metadata"] = json.loads(item.pop("metadata_json") or "{}")
+        item["score"] = 1.0
+        item["match_type"] = "product_code_exact"
+        results.append(item)
+
+    return results
+
+
+def search_items_by_metadata_like(query: str, only_images: bool = False, limit: int = 10):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    like_query = f"%{query}%"
+
+    if only_images:
+        cur.execute("""
+        SELECT *
+        FROM items
+        WHERE item_type = 'image'
+          AND (
+              title LIKE ?
+              OR category LIKE ?
+              OR product_code LIKE ?
+              OR source LIKE ?
+              OR content LIKE ?
+              OR metadata_json LIKE ?
+          )
+        LIMIT ?
+        """, (
+            like_query,
+            like_query,
+            like_query,
+            like_query,
+            like_query,
+            like_query,
+            limit
+        ))
+    else:
+        cur.execute("""
+        SELECT *
+        FROM items
+        WHERE title LIKE ?
+           OR category LIKE ?
+           OR product_code LIKE ?
+           OR source LIKE ?
+           OR content LIKE ?
+           OR metadata_json LIKE ?
+        LIMIT ?
+        """, (
+            like_query,
+            like_query,
+            like_query,
+            like_query,
+            like_query,
+            like_query,
+            limit
+        ))
+
+    rows = cur.fetchall()
+    conn.close()
+
+    results = []
+    for row in rows:
+        item = dict(row)
+        item["metadata"] = json.loads(item.pop("metadata_json") or "{}")
+        item["score"] = 0.95
+        item["match_type"] = "metadata_like"
+        results.append(item)
+
+    return results
+
+
+def search_items_by_type(item_type: str, limit: int = 20):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+    SELECT *
+    FROM items
+    WHERE item_type = ?
+    LIMIT ?
+    """, (item_type, limit))
+
+    rows = cur.fetchall()
+    conn.close()
+
+    results = []
+    for row in rows:
+        item = dict(row)
+        item["metadata"] = json.loads(item.pop("metadata_json") or "{}")
+        item["score"] = 0.5
+        item["match_type"] = "type_filter"
+        results.append(item)
+
+    return results

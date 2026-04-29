@@ -125,7 +125,7 @@ def ingest_all():
     embeddings_matrix = np.vstack(all_embeddings).astype("float32")
 
     index_store = FaissIndexStore()
-    index_store.build(embeddings_matrix, vector_ids)
+    index_store.build(embeddings_matrix, vector_ids) #indexe embedding matrixleri ve vector idleri atılıyor
     index_store.save()
 
     print("\nIngestion tamamlandı.")
