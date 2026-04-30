@@ -199,11 +199,16 @@ def hybrid_search(query: str, top_k: int = 5):
     if route["intent"] == "recommendation":
         metadata_results = search_items_by_filters(
             query_terms=[],
-            only_images=False,
+            only_images=True,
             brand=route["brand"],
             part_keywords=route["part_keywords"],
             limit=top_k * 5
         )
+
+        metadata_results = [
+            item for item in metadata_results
+            if item.get("item_type") == "image"
+        ]
 
         for item in metadata_results:
             item["match_type"] = "recommendation_candidates"
