@@ -15,34 +15,36 @@ def init_db():
     conn = get_connection()
     cur = conn.cursor()
 
-    #burada vector_id olusturulurken verilir
     cur.execute("""
     CREATE TABLE IF NOT EXISTS items (
         vector_id INTEGER PRIMARY KEY,
         item_id TEXT NOT NULL,
-        vector_type TEXT NOT NULL,
         item_type TEXT NOT NULL,
+        vector_type TEXT,
         title TEXT NOT NULL,
         category TEXT,
         product_code TEXT,
         source TEXT,
         content TEXT,
         image_path TEXT,
+        brand TEXT,
+        part_group TEXT,
         metadata_json TEXT
     )
     """)
 
-    #index olusturuyoruz dbde
-    cur.execute("CREATE INDEX IF NOT EXISTS idx_items_item_id ON items(item_id)")
+    # Eski DB varsa kolonları eklemeyi dene
+    for col in ["brand TEXT", "part_group TEXT", "vector_type TEXT"]:
+        try:
+            cur.execute(f"ALTER TABLE items ADD COLUMN {col}")
+        except sqlite3.OperationalError:
+            pass
 
-    #category indexi
-    cur.execute("CREATE INDEX IF NOT EXISTS idx_items_vector_type ON items(vector_type)")
-
-    #ürün ismi indexi
-    cur.execute("CREATE INDEX IF NOT EXISTS idx_items_category ON items(category)")
-
-    #yeni eklendi
     cur.execute("CREATE INDEX IF NOT EXISTS idx_items_product_code ON items(product_code)")
+    cur.execute("CREATE INDEX IF NOT EXISTS idx_items_category ON items(category)")
+    cur.execute("CREATE INDEX IF NOT EXISTS idx_items_brand ON items(brand)")
+    cur.execute("CREATE INDEX IF NOT EXISTS idx_items_part_group ON items(part_group)")
+    cur.execute("CREATE INDEX IF NOT EXISTS idx_items_type ON items(item_type)")
 
     conn.commit()
     conn.close()
@@ -54,12 +56,16 @@ def clear_db():
     conn.commit()
     conn.close()
 
+def row_to_item(row):
+    item = dict(row)
+    item["metadata"] = json.loads(item.pop("metadata_json") or "{}")
+    return item
 
 def insert_item(
     vector_id: int,
     item_id: str,
-    vector_type: str,
     item_type: str,
+    vector_type: str,
     title: str,
     category: str,
     product_code: str,
@@ -67,37 +73,45 @@ def insert_item(
     content: str,
     image_path: str | None,
     metadata: dict
-):
+    ):
+    metadata = metadata or {}
+    brand = metadata.get("brand")
+    part_group = metadata.get("part_group")
+
     conn = get_connection()
     cur = conn.cursor()
 
     cur.execute("""
-    INSERT OR REPLACE INTO items (
-        vector_id,
-        item_id,
-        vector_type,
-        item_type,
-        title,
-        category,
-        product_code,
-        source,
-        content,
-        image_path,
-        metadata_json
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    """, (
-        vector_id,
-        item_id,
-        vector_type,
-        item_type,
-        title,
-        category,
-        product_code,
-        source,
-        content,
-        image_path,
-        json.dumps(metadata or {}, ensure_ascii=False)
-    ))
+        INSERT OR REPLACE INTO items (
+            vector_id,
+            item_id,
+            item_type,
+            vector_type,
+            title,
+            category,
+            product_code,
+            source,
+            content,
+            image_path,
+            brand,
+            part_group,
+            metadata_json
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            vector_id,
+            item_id,
+            item_type,
+            vector_type,
+            title,
+            category,
+            product_code,
+            source,
+            content,
+            image_path,
+            brand,
+            part_group,
+            json.dumps(metadata, ensure_ascii=False)
+        ))
 
     conn.commit()
     conn.close()
@@ -111,59 +125,7 @@ def fetch_item_by_vector_id(vector_id: int):
     row = cur.fetchone()
     conn.close()
 
-    if row is None:
-        return None
-
-    result = dict(row)
-    result["metadata"] = json.loads(result.pop("metadata_json") or "{}")
-    return result
-
-
-def search_exact_by_product_code(query: str):
-    conn = get_connection()
-    cur = conn.cursor()
-
-    normalized_query = query.upper().strip()
-
-    cur.execute("""
-    SELECT *
-    FROM items
-    WHERE UPPER(product_code) = ?
-    LIMIT 20
-    """, (normalized_query,))
-
-    rows = cur.fetchall()
-
-    if not rows:
-        cur.execute("""
-        SELECT *
-        FROM items
-        WHERE UPPER(?) LIKE '%' || UPPER(product_code) || '%'
-           OR UPPER(product_code) LIKE '%' || UPPER(?) || '%'
-        LIMIT 20
-        """, (query, query))
-        rows = cur.fetchall()
-
-    conn.close()
-
-    results = []
-    seen_item_ids = set()
-
-    for row in rows:
-        item = dict(row)
-        item["metadata"] = json.loads(item.pop("metadata_json") or "{}")
-
-        # Aynı item text/image vector olarak iki kere geldiyse tek göster.
-        dedupe_key = item["item_id"]
-        if dedupe_key in seen_item_ids:
-            continue
-
-        seen_item_ids.add(dedupe_key)
-        item["score"] = 1.0
-        item["match_type"] = "exact_product_code"
-        results.append(item)
-
-    return results
+    return row_to_item(row) if row else None
 
 def search_items_by_product_code(product_code: str):
     conn = get_connection()
@@ -180,14 +142,89 @@ def search_items_by_product_code(product_code: str):
 
     results = []
     for row in rows:
-        item = dict(row)
-        item["metadata"] = json.loads(item.pop("metadata_json") or "{}")
+        item = row_to_item(row)
         item["score"] = 1.0
         item["match_type"] = "product_code_exact"
         results.append(item)
 
     return results
 
+def search_items_by_filters(
+    query_terms: list[str],
+    only_images: bool = False,
+    brand: str | None = None,
+    part_keywords: list[str] | None = None,
+    limit: int = 20
+    ):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    where = []
+    params = []
+
+    if only_images:
+        where.append("item_type = 'image'")
+
+    if brand:
+        where.append("UPPER(brand) = UPPER(?)")
+        params.append(brand)
+
+    if part_keywords:
+        part_conditions = []
+        for kw in part_keywords:
+            like = f"%{kw}%"
+            part_conditions.append("""
+            (
+                LOWER(title) LIKE LOWER(?)
+                OR LOWER(category) LIKE LOWER(?)
+                OR LOWER(product_code) LIKE LOWER(?)
+                OR LOWER(content) LIKE LOWER(?)
+                OR LOWER(part_group) LIKE LOWER(?)
+                OR LOWER(metadata_json) LIKE LOWER(?)
+            )
+            """)
+            params.extend([like, like, like, like, like, like])
+
+        where.append("(" + " OR ".join(part_conditions) + ")")
+
+    if query_terms:
+        term_conditions = []
+        for term in query_terms:
+            like = f"%{term}%"
+            term_conditions.append("""
+            (
+                LOWER(title) LIKE LOWER(?)
+                OR LOWER(category) LIKE LOWER(?)
+                OR LOWER(product_code) LIKE LOWER(?)
+                OR LOWER(content) LIKE LOWER(?)
+                OR LOWER(brand) LIKE LOWER(?)
+                OR LOWER(part_group) LIKE LOWER(?)
+                OR LOWER(metadata_json) LIKE LOWER(?)
+            )
+            """)
+            params.extend([like, like, like, like, like, like, like])
+
+        where.append("(" + " OR ".join(term_conditions) + ")")
+
+    sql = "SELECT * FROM items"
+    if where:
+        sql += " WHERE " + " AND ".join(where)
+
+    sql += " LIMIT ?"
+    params.append(limit)
+
+    cur.execute(sql, params)
+    rows = cur.fetchall()
+    conn.close()
+
+    results = []
+    for row in rows:
+        item = row_to_item(row)
+        item["score"] = 0.95
+        item["match_type"] = "metadata_filter"
+        results.append(item)
+
+    return results
 
 def search_items_by_metadata_like(query: str, only_images: bool = False, limit: int = 10):
     conn = get_connection()
@@ -276,3 +313,6 @@ def search_items_by_type(item_type: str, limit: int = 20):
         results.append(item)
 
     return results
+
+def search_exact_by_product_code(product_code: str):
+    return search_items_by_product_code(product_code)

@@ -1,4 +1,4 @@
-from app.db import fetch_item_by_vector_id, search_exact_by_product_code
+from app.db import fetch_item_by_vector_id, search_items_by_product_code
 from app.embedder import QwenVLEmbedder
 from app.index_store import FaissIndexStore
 from app.config import TOP_K
@@ -32,17 +32,15 @@ def dedupe_results(results):
     return deduped
 
 
-def search_by_text(query: str, top_k: int = TOP_K, use_exact_search: bool = True):
+def search_by_text(query: str, top_k: int = TOP_K, use_exact_search: bool = False):
     final_results = []
 
-    # 1) Önce product_code exact/LIKE araması
     if use_exact_search:
-        exact_results = search_exact_by_product_code(query)
+        exact_results = search_items_by_product_code(query)
 
         if exact_results:
             return exact_results[:top_k]
 
-    # 2) Sonra FAISS semantic search
     embedder = get_embedder()
 
     query_embedding = embedder.encode_texts(
@@ -53,7 +51,6 @@ def search_by_text(query: str, top_k: int = TOP_K, use_exact_search: bool = True
     index_store = FaissIndexStore()
     index_store.load()
 
-    # Aynı item text+image vector olarak iki kere dönebileceği için daha fazla çekiyoruz.
     raw_results = index_store.search(query_embedding, top_k=top_k * 3)
 
     for result in raw_results:

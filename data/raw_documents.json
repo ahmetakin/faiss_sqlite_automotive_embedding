@@ -54,7 +54,12 @@
     "metadata": {
       "brand": "BOSCH",
       "part_group": "battery",
-      "voltage": "12V"
+      "voltage": "12V",
+      "warranty_months": 24,
+      "rating": 4.7,
+      "review_count": 320,
+      "price": 2850,
+      "cold_cranking_amp": 680
     }
   },
     {
@@ -69,7 +74,12 @@
     "metadata": {
       "brand": "EVER START",
       "part_group": "battery",
-      "voltage": "12V"
+      "voltage": "12V",
+      "warranty_months": 12,
+      "rating": 4.1,
+      "review_count": 322,
+      "price": 3100,
+      "cold_cranking_amp": 660
     }
   },
     {
@@ -84,7 +94,12 @@
     "metadata": {
       "brand": "POWERLINE",
       "part_group": "battery",
-      "voltage": "12V"
+      "voltage": "12V",
+      "warranty_months": 36,
+      "rating": 4.3,
+      "review_count": 330,
+      "price": 2900,
+      "cold_cranking_amp": 670
     }
   },
   {
@@ -98,7 +113,11 @@
     "image_path": "images/brake_pad_bosch_honda_civic_fc5_front.jpg",
     "metadata": {
       "brand": "BOSCH",
-      "part_group": "brake_system"
+      "part_group": "brake_system",
+      "warranty_months": 24,
+      "rating": 4.5,
+      "review_count": 330,
+      "price": 2900
     }
   },
   {
@@ -112,7 +131,11 @@
     "image_path": "images/brake_pad_sbs_honda_civic_fc5_front.jpg",
     "metadata": {
       "brand": "SBS",
-      "part_group": "brake_system"
+      "part_group": "brake_system",
+      "warranty_months": 12,
+      "rating": 4.1,
+      "review_count": 320,
+      "price": 2400
     }
   },
   {
@@ -126,7 +149,11 @@
     "image_path": "images/brake_pad_osimco_honda_civic_fc5_front.png",
     "metadata": {
       "brand": "OSIMCO",
-      "part_group": "brake_system"
+      "part_group": "brake_system",
+      "warranty_months": 30,
+      "rating": 4.4,
+      "review_count": 300,
+      "price": 2990
     }
   },
   {
@@ -140,7 +167,11 @@
     "image_path": "images/brake_pad_brembo_honda_civic_fc5_front.jpg",
     "metadata": {
       "brand": "BREMBO",
-      "part_group": "brake_system"
+      "part_group": "brake_system",
+      "warranty_months": 36,
+      "rating": 4.0,
+      "review_count": 370,
+      "price": 3000
     }
   }
   ,
@@ -155,7 +186,10 @@
     "image_path": "images/engine_oil_total_quartz_5w_40.jpg",
     "metadata": {
       "brand": "TOTAL",
-      "part_group": "engine_system"
+      "part_group": "engine_system",
+      "rating": 4.5,
+      "review_count": 400,
+      "price": 1000
     }
   },
   {
@@ -169,7 +203,10 @@
     "image_path": "images/engine_oil_shell_helix_ultra_5w_40.jpeg",
     "metadata": {
       "brand": "SHELL",
-      "part_group": "engine_system"
+      "part_group": "engine_system",
+      "rating": 4.1,
+      "review_count": 430,
+      "price": 1100
     }
   },
   {
@@ -183,7 +220,10 @@
     "image_path": "images/engine_oil_performance_plus_5w_20.jpg",
     "metadata": {
       "brand": "PERFORMANCE PLUS",
-      "part_group": "engine_system"
+      "part_group": "engine_system",
+      "rating": 4.0,
+      "review_count": 385,
+      "price": 950
     }
   },
   {
@@ -197,7 +237,10 @@
     "image_path": "images/engine_oil_castrol_magnetic.jpg",
     "metadata": {
       "brand": "CASTROL",
-      "part_group": "engine_system"
+      "part_group": "engine_system",
+      "rating": 4.2,
+      "review_count": 389,
+      "price": 1050
     }
   }
 ]
