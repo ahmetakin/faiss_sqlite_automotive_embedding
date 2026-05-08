@@ -1,9 +1,61 @@
-from app.router import detect_query_intent
+from app.router import detect_query_intent,STRICT_FAMILY_RULES
 from app.db import (
     search_items_by_product_code,
     search_items_by_filters
 )
 from app.search import search_by_text
+
+
+def apply_strict_family_filter(results, route):
+    strict_family = route.get("strict_family")
+
+    if not strict_family:
+        return results
+
+    rule = STRICT_FAMILY_RULES.get(strict_family)
+    if not rule:
+        return results
+
+    include_prefixes = rule.get("include_product_prefixes", [])
+    exclude_prefixes = rule.get("exclude_product_prefixes", [])
+    exclude_words = rule.get("exclude_words", [])
+
+    filtered = []
+
+    for item in results:
+        product_code = str(item.get("product_code") or "").upper()
+        title = str(item.get("title") or "").lower()
+        content = str(item.get("content") or "").lower()
+        category = str(item.get("category") or "").lower()
+        part_group = str(item.get("part_group") or "").lower()
+
+        blob = f"{title} {content} {category} {part_group}".lower()
+
+        excluded = False
+
+        for prefix in exclude_prefixes:
+            if product_code.startswith(prefix.upper()):
+                excluded = True
+
+        for word in exclude_words:
+            if word.lower() in blob:
+                excluded = True
+
+        if excluded:
+            continue
+
+        if include_prefixes:
+            matched_prefix = any(
+                product_code.startswith(prefix.upper())
+                for prefix in include_prefixes
+            )
+
+            if not matched_prefix:
+                continue
+
+        filtered.append(item)
+
+    return filtered
 
 
 def deduplicate_results(results):
@@ -168,8 +220,10 @@ def hybrid_search(query: str, top_k: int = 5):
             limit=top_k * 5
         )
 
+
         final_results.extend(metadata_results)
         final_results = deduplicate_results(final_results)
+        final_results = apply_strict_family_filter(final_results, route)
 
         # Eğer net metadata sonucu varsa FAISS fallback'e hiç gitme.
         # Özellikle "BOSCH akü görselini getir" gibi brand + parça sorgularında noise engellenir.
@@ -191,6 +245,7 @@ def hybrid_search(query: str, top_k: int = 5):
             final_results.append(item)
 
         final_results = deduplicate_results(final_results)
+        final_results = apply_strict_family_filter(final_results, route)
         final_results = sort_results(final_results, route)
         return final_results[:top_k]
 
@@ -209,6 +264,8 @@ def hybrid_search(query: str, top_k: int = 5):
             item for item in metadata_results
             if item.get("item_type") == "image"
         ]
+
+        metadata_results = apply_strict_family_filter(metadata_results, route)
 
         for item in metadata_results:
             item["match_type"] = "recommendation_candidates"
@@ -246,5 +303,6 @@ def hybrid_search(query: str, top_k: int = 5):
         item["match_type"] = "semantic_faiss"
 
     final_results = deduplicate_results(semantic_results)
+    #final_results = apply_strict_family_filter(final_results, route)
     final_results = sort_results(final_results, route)
     return final_results[:top_k]

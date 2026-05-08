@@ -6,7 +6,7 @@ os.environ["HF_HUB_OFFLINE"] = "1"
 os.environ["TRANSFORMERS_OFFLINE"] = "1"
 os.environ["HF_DATASETS_OFFLINE"] = "1"
 os.environ["CUDA_VISIBLE_DEVICES"] = "2,3"
-
+from tqdm import tqdm
 from typing import List
 import numpy as np
 import torch
@@ -16,6 +16,7 @@ from transformers import AutoProcessor, AutoModel
 from app.config import MODEL_PATH, IMAGE_MAX_SIZE
 
 # vektördeki değerlerin karelerinin toplamının karekökünü (Öklid mesafesi) kullanarak veriyi normalize ederiz
+#vektör hazırlıgı 1 birime eşitler tüm cümlelerin büyüklüğünü değil, sadece yönünü anlamını önemsememizi sağlar
 def l2_normalize(x: np.ndarray) -> np.ndarray:
     norm = np.linalg.norm(x, axis=1, keepdims=True)
     return x / np.clip(norm, 1e-12, None)
@@ -84,77 +85,97 @@ class QwenVLEmbedder:
 
     #metinleri embedding’e çeviriyor.
     #query ve document ayrım önemli. Çünkü embedding modellerinde query ve document farklı prompt ile verilirse retrieval kalitesi artabilir.
-    def encode_texts(self, texts: List[str], mode: str = "document") -> np.ndarray:
-        if mode == "query":
-            prepared_texts = [
-                f"Represent this query for retrieving relevant documents: {text}"
-                for text in texts
-            ]
+    def encode_texts(self, texts: List[str], mode: str = "document", batch_size: int = 32) -> np.ndarray:
+        all_embeddings = []
 
-        elif mode == "document":#Dokümanları vektörleştirirken kullanılıyor.
-            prepared_texts = [
-                f"Represent this document for retrieval: {text}"
-                for text in texts
-            ]
+        # Listeyi parçalara (batch) bölüyoruz
+        for i in tqdm(range(0, len(texts), batch_size), desc="Metinler işleniyor"):
+            batch_texts = texts[i : i + batch_size]
+            
+            if mode == "query":
+                prepared_texts = [f"Represent this query for retrieving relevant documents: {text}" for text in batch_texts]
+            elif mode == "document":
+                prepared_texts = [f"Represent this document for retrieval: {text}" for text in batch_texts]
+            else:
+                prepared_texts = batch_texts
 
-        else:
-            prepared_texts = texts
+            inputs = self.processor(
+                text=prepared_texts,
+                return_tensors="pt",
+                padding=True,
+                truncation=True
+            )
 
-        #metni token haline getiriyor.
-        inputs = self.processor(
-            text=prepared_texts,
-            return_tensors="pt",
-            padding=True,
-            truncation=True
-        )
+            inputs = move_inputs_to_device(inputs, self.model.device)
 
-        inputs = move_inputs_to_device(inputs, self.model.device)
+            with torch.no_grad():
+                outputs = self.model(**inputs)
 
-        with torch.no_grad():
-            outputs = self.model(**inputs) #modelden embedding çıkarıyor.
+            batch_emb = get_embedding_from_outputs(outputs, inputs)
+            batch_emb = batch_emb.float().cpu().numpy()
+            all_embeddings.append(batch_emb)
+            
+            # Belleği temizlemek için (opsiyonel ama önerilir)
+            del outputs, inputs, batch_emb
+            torch.cuda.empty_cache()
 
-        embeddings = get_embedding_from_outputs(outputs, inputs)
-        embeddings = embeddings.float().cpu().numpy()
-        embeddings = l2_normalize(embeddings) # normalize edip geri döndürüyor.
-
-        return embeddings.astype("float32")
-
-    #Bu fonksiyon görseli embedding’e çeviriyor.
-    def encode_images(self, image_paths: List[str]) -> np.ndarray:
-        images = []
-
-        for image_path in image_paths:
-            #Görsel açılıyor, RGB’ye çevriliyor ve maksimum 448x448 boyutuna küçültülüyor.
-            image = Image.open(image_path).convert("RGB")
-            image.thumbnail((IMAGE_MAX_SIZE, IMAGE_MAX_SIZE))
-            images.append(image)
-        #Sonra modelin beklediği görsel token alınıyor:
-        image_token = getattr(self.processor, "image_token", "<|image_pad|>")
-
-        #modele “bu görseli retrieval için temsil et” deniyor.
-        image_prompts = [
-            f"Represent this image for retrieval: {image_token}"
-            for _ in images
-        ]
-
-        #Sonra metin + görsel birlikte processor’dan geçirilip embedding üretiliyor.
-        inputs = self.processor(
-            text=image_prompts,
-            images=images,
-            return_tensors="pt",
-            padding=True
-        )
-
-        inputs = move_inputs_to_device(inputs, self.model.device)
-
-        with torch.no_grad():
-            outputs = self.model(**inputs)
-
-        embeddings = get_embedding_from_outputs(outputs, inputs)
-        embeddings = embeddings.float().cpu().numpy()
+        # Tüm parçaları birleştir ve normalize et
+        embeddings = np.vstack(all_embeddings)
         embeddings = l2_normalize(embeddings)
 
         return embeddings.astype("float32")
+
+
+    #Bu fonksiyon görseli embedding’e çeviriyor.
+    def encode_images(self, image_paths: List[str], batch_size: int = 8) -> np.ndarray:
+        all_embeddings = []
+        image_token = getattr(self.processor, "image_token", "<|image_pad|>")
+
+        # Listeyi batch_size büyüklüğünde parçalara bölüyoruz
+        for i in tqdm(range(0, len(image_paths), batch_size), desc="Resimler işleniyor"):
+            batch_paths = image_paths[i : i + batch_size]
+            batch_images = []
+
+            # Sadece mevcut batch'teki resimleri yükle ve işle
+            for path in batch_paths:
+                image = Image.open(path).convert("RGB")
+                image.thumbnail((IMAGE_MAX_SIZE, IMAGE_MAX_SIZE))
+                batch_images.append(image)
+
+            image_prompts = [
+                f"Represent this image for retrieval: {image_token}"
+                for _ in batch_images
+            ]
+
+            # Processor ile batch'i hazırla
+            inputs = self.processor(
+                text=image_prompts,
+                images=batch_images,
+                return_tensors="pt",
+                padding=True
+            )
+
+            inputs = move_inputs_to_device(inputs, self.model.device)
+
+            with torch.no_grad():
+                outputs = self.model(**inputs)
+
+            # Embedding'leri al ve CPU'ya çek
+            batch_emb = get_embedding_from_outputs(outputs, inputs)
+            batch_emb = batch_emb.float().cpu().numpy()
+            all_embeddings.append(batch_emb)
+
+            # Bellek temizliği
+            del outputs, inputs, batch_images, image_prompts
+            torch.cuda.empty_cache()
+
+        # Tüm batch'leri dikey olarak birleştir
+        embeddings = np.vstack(all_embeddings)
+        # L2 Normalizasyonu tüm listeye uygula
+        embeddings = l2_normalize(embeddings)
+
+        return embeddings.astype("float32")
+
 
 
 #Metin ve Görsel embedding'leri aynı normalize edilmiş uzaya konulur

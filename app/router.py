@@ -49,6 +49,38 @@ PART_KEYWORDS = {
     "engine_system": ["motor yağı", "motor yagi", "yağ", "yag", "oil", "engine oil"]
 }
 
+STRICT_FAMILY_RULES = {
+    "battery": {
+        "keywords": ["akü", "aku", "batarya", "battery"],
+        "include_product_prefixes": ["BAT-12V"],
+        "exclude_product_prefixes": ["ACC-BATT"],
+        "exclude_words": ["şarj cihazı", "charger", "takviye"]
+    },
+    "brake_pad": {
+        "keywords": ["fren balatası", "fren balata", "balata"],
+        "include_product_prefixes": ["BRK-PAD"],
+        "exclude_product_prefixes": ["BRAKE-DISC", "CLUTCH"],
+        "exclude_words": ["disk", "debriyaj", "baskı balata"]
+    },
+    "engine_oil": {
+        "keywords": ["motor yağı", "motor yagi", "yağ", "yag", "engine oil"],
+        "include_product_prefixes": ["ENGINE-OIL"],
+        "exclude_words": ["şanzıman", "transmission"]
+    }
+}
+
+
+def detect_strict_family(query: str):
+    q = query.lower()
+
+    for family, rule in STRICT_FAMILY_RULES.items():
+        for kw in rule["keywords"]:
+            if kw in q:
+                return family
+
+    return None
+
+
 def is_recommendation_request(query: str) -> bool:
     q = query.lower()
     return any(word in q for word in RECOMMENDATION_WORDS)
@@ -108,6 +140,7 @@ def detect_query_intent(query: str):
     part_keywords = extract_part_keywords(query)
     only_images = is_image_request(query)
     query_terms = clean_query_terms(query)
+    strict_family = detect_strict_family(query)
 
     if product_codes:
         intent = "product_code"
@@ -124,5 +157,6 @@ def detect_query_intent(query: str):
         "only_images": only_images,
         "brand": brand,
         "part_keywords": part_keywords,
-        "query_terms": query_terms
+        "query_terms": query_terms,
+        "strict_family": strict_family        
     }
